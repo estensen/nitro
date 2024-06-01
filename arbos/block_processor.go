@@ -5,10 +5,13 @@ package arbos
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"math/big"
+	"net/http"
 
 	"github.com/offchainlabs/nitro/arbos/arbosState"
 	"github.com/offchainlabs/nitro/arbos/arbostypes"
@@ -207,6 +210,13 @@ func ProduceBlockAdvanced(
 	}
 
 	header := createNewHeader(lastBlockHeader, l1Info, state, chainConfig)
+
+	// Fetch the fresh BTC/USD price from Coingecko
+	price, err := getBtcUsdPrice(http.DefaultClient)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	signer := types.MakeSigner(chainConfig, header.Number, header.Time)
 	// Note: blockGasLeft will diverge from the actual gas left during execution in the event of invalid txs,
 	// but it's only used as block-local representation limiting the amount of work done in a block.
@@ -543,4 +553,36 @@ func FinalizeBlock(header *types.Header, txs types.Transactions, statedb *state.
 		arbitrumHeader.UpdateHeaderWithInfo(header)
 		header.Root = statedb.IntermediateRoot(true)
 	}
+}
+
+type HttpClient interface {
+	Get(url string) (*http.Response, error)
+}
+
+type BtcUsdPrice struct {
+	Bitcoin struct {
+		Usd int `json:"usd"`
+	} `json:"bitcoin"`
+}
+
+// getBtcUsdPrice gets the price of Bitcoin from Coingecko
+// simplify assumptioin that it will return ints
+func getBtcUsdPrice(client HttpClient) (int, error) {
+	resp, err := client.Get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd")
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+
+	var price BtcUsdPrice
+	if err := json.Unmarshal(body, &price); err != nil {
+		return 0, err
+	}
+
+	return price.Bitcoin.Usd, nil
 }
