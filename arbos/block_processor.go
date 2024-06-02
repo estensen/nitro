@@ -216,6 +216,8 @@ func ProduceBlockAdvanced(
 	if err != nil {
 		return nil, nil, err
 	}
+	// Set the price data in the block header
+	updatePriceOracleStorage(statedb, price)
 
 	signer := types.MakeSigner(chainConfig, header.Number, header.Time)
 	// Note: blockGasLeft will diverge from the actual gas left during execution in the event of invalid txs,
@@ -585,4 +587,18 @@ func getBtcUsdPrice(client HttpClient) (int, error) {
 	}
 
 	return price.Bitcoin.Usd, nil
+}
+
+func updatePriceOracleStorage(statedb *state.StateDB, price int) {
+	// Hardcoded value of PriceOracle contract
+	addr := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
+
+	// btcUsdPrice is the first state variable
+	storageSlot := common.Hash{}
+
+	// Convert the price from int to a 32-byte array
+	priceBytes := make([]byte, 32)
+	binary.BigEndian.PutUint64(priceBytes[24:], uint64(price))
+
+	statedb.SetState(addr, storageSlot, common.BytesToHash(priceBytes))
 }
