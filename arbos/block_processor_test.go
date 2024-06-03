@@ -60,7 +60,8 @@ func TestUpdatePriceOracleStorage(t *testing.T) {
 	// Create a new in-memory state database
 	statedb, _ := state.New(types.EmptyRootHash, state.NewDatabase(rawdb.NewMemoryDatabase()), nil)
 
-	priceOracleAddress := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
+	// Hardcoded value of Sepolia PriceOracle contract
+	priceOracleAddress := common.HexToAddress("0x8522965F7D0cC7CeEbc4D6EB8F4CB81366721eEc")
 	testPrice := 35000
 	updatePriceOracleStorage(statedb, testPrice)
 

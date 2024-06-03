@@ -590,8 +590,8 @@ func getBtcUsdPrice(client HttpClient) (int, error) {
 }
 
 func updatePriceOracleStorage(statedb *state.StateDB, price int) {
-	// Hardcoded value of PriceOracle contract
-	addr := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
+	// Hardcoded value of Sepolia PriceOracle contract
+	addr := common.HexToAddress("0x8522965F7D0cC7CeEbc4D6EB8F4CB81366721eEc")
 
 	// btcUsdPrice is the first state variable
 	storageSlot := common.Hash{}
