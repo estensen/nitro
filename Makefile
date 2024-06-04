@@ -31,7 +31,7 @@ ifneq ($(origin GOLANG_LDFLAGS),undefined)
  GOLANG_PARAMS = -ldflags="$(GOLANG_LDFLAGS)"
 endif
 
-precompile_names = AddressTable Aggregator BLS Debug FunctionTable GasInfo Info osTest Owner RetryableTx Statistics Sys
+precompile_names = AddressTable Aggregator BLS Debug FunctionTable GasInfo Info osTest Owner RetryableTx Statistics Sys PriceFeed
 precompiles = $(patsubst %,./solgen/generated/%.go, $(precompile_names))
 
 output_root=target

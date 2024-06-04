@@ -215,7 +215,11 @@ func ProduceBlockAdvanced(
 		return nil, nil, err
 	}
 	// Set the price data in the block header
-	updatePriceOracleStorage(statedb, price)
+	if err := state.SetPriceFeed(price); err != nil {
+		// Not being able to update the price oracle will halt block production.
+		// Don't do this, it's just for demo.
+		return nil, nil, err
+	}
 
 	signer := types.MakeSigner(chainConfig, header.Number, header.Time)
 	// Note: blockGasLeft will diverge from the actual gas left during execution in the event of invalid txs,

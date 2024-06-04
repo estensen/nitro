@@ -54,6 +54,7 @@ type ArbosState struct {
 	genesisBlockNum               storage.StorageBackedUint64
 	infraFeeAccount               storage.StorageBackedAddress
 	brotliCompressionLevel        storage.StorageBackedUint64 // brotli compression level used for pricing
+	priceFeed                     storage.StorageBackedUint64
 	backingStorage                *storage.Storage
 	Burner                        burn.Burner
 }
@@ -89,6 +90,7 @@ func OpenArbosState(stateDB vm.StateDB, burner burn.Burner) (*ArbosState, error)
 		backingStorage.OpenStorageBackedUint64(uint64(genesisBlockNumOffset)),
 		backingStorage.OpenStorageBackedAddress(uint64(infraFeeAccountOffset)),
 		backingStorage.OpenStorageBackedUint64(uint64(brotliCompressionLevelOffset)),
+		backingStorage.OpenStorageBackedUint64(uint64(priceFeedOffset)),
 		backingStorage,
 		burner,
 	}, nil
@@ -147,6 +149,7 @@ const (
 	genesisBlockNumOffset
 	infraFeeAccountOffset
 	brotliCompressionLevelOffset
+	priceFeedOffset
 )
 
 type SubspaceID []byte
@@ -224,6 +227,7 @@ func InitializeArbosState(stateDB vm.StateDB, burner burn.Burner, chainConfig *p
 	_ = chainConfigStorage.Set(initMessage.SerializedChainConfig)
 	_ = sto.SetUint64ByUint64(uint64(genesisBlockNumOffset), chainConfig.ArbitrumChainParams.GenesisBlockNum)
 	_ = sto.SetUint64ByUint64(uint64(brotliCompressionLevelOffset), 0) // default brotliCompressionLevel for fast compression is 0
+	_ = sto.SetUint64ByUint64(uint64(priceFeedOffset), 0)
 
 	initialRewardsRecipient := l1pricing.BatchPosterAddress
 	if desiredArbosVersion >= 2 {
@@ -490,4 +494,12 @@ func (state *ArbosState) SetChainConfig(serializedChainConfig []byte) error {
 
 func (state *ArbosState) GenesisBlockNum() (uint64, error) {
 	return state.genesisBlockNum.Get()
+}
+
+func (state *ArbosState) GetPriceFeed() (uint64, error) {
+	return state.priceFeed.Get()
+}
+
+func (state *ArbosState) SetPriceFeed(val uint64) error {
+	return state.priceFeed.Set(val)
 }

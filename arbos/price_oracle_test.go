@@ -3,16 +3,9 @@ package arbos
 import (
 	"bytes"
 	"encoding/json"
-	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/core/state"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/stretchr/testify/assert"
 )
 
 type MockHttpClient struct {
@@ -50,27 +43,8 @@ func TestGetBtcUsdPrice(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	expectedPrice := 68513
+	expectedPrice := uint64(68513)
 	if price != expectedPrice {
 		t.Errorf("expected price %d, got %d", expectedPrice, price)
 	}
-}
-
-func TestUpdatePriceOracleStorage(t *testing.T) {
-	// Create a new in-memory state database
-	statedb, _ := state.New(types.EmptyRootHash, state.NewDatabase(rawdb.NewMemoryDatabase()), nil)
-
-	// Hardcoded value of Sepolia PriceOracle contract
-	priceOracleAddress := common.HexToAddress("0x8522965F7D0cC7CeEbc4D6EB8F4CB81366721eEc")
-	testPrice := 35000
-	updatePriceOracleStorage(statedb, testPrice)
-
-	// Storage slot for btcUsdPrice
-	storageSlot := common.Hash{}
-
-	// Retrieve the updated price from the state database
-	updatedPriceBytes := statedb.GetState(priceOracleAddress, storageSlot).Bytes()
-	updatedPrice := new(big.Int).SetBytes(updatedPriceBytes)
-
-	assert.Equal(t, testPrice, int(updatedPrice.Int64()), "The price in the state database should match the test price")
 }
