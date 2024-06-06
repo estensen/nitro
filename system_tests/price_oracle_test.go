@@ -20,7 +20,7 @@ func TestPriceOracleUpdate(t *testing.T) {
 	cleanup := builder.Build(t)
 	defer cleanup()
 
-	arbHi, err := precompilesgen.NewArbPriceFeed(common.HexToAddress("0x11a"), builder.L2.Client)
+	arbPriceFeed, err := precompilesgen.NewArbPriceFeed(common.HexToAddress("0x11a"), builder.L2.Client)
 	Require(t, err)
 
 	callOpts := &bind.CallOpts{Context: ctx}
@@ -43,9 +43,10 @@ func TestPriceOracleUpdate(t *testing.T) {
 	Require(t, err)
 	fmt.Println("Transaction mined in block:", receipt.BlockNumber)
 
-	num, err := arbHi.GetLatestBtcPrice(callOpts)
+	price, err := arbPriceFeed.GetLatestBtcPrice(callOpts)
+	fmt.Printf("Current btc price is %d", price)
 	Require(t, err)
-	if num == 0 {
+	if price == 0 {
 		t.Error("Expected price to be not zero")
 	}
 }

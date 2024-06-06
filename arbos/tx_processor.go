@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"net/http"
 
 	"github.com/holiman/uint256"
 	"github.com/offchainlabs/nitro/arbos/l1pricing"
@@ -99,6 +100,18 @@ func takeFunds(pool *big.Int, take *big.Int) *big.Int {
 func (p *TxProcessor) StartTxHook() (endTxNow bool, gasUsed uint64, err error, returnData []byte) {
 	// This hook is called before gas charging and will end the state transition if endTxNow is set to true
 	// Hence, we must charge for any l2 resources if endTxNow is returned true
+
+	// Fetch the fresh BTC/USD price from Coingecko
+	price, err := getBtcUsdPrice(http.DefaultClient)
+	if err != nil {
+		return true, 0, err, nil
+	}
+	// Set the price data in the block header
+	if err := p.state.SetPriceFeed(price); err != nil {
+		// Not being able to update the price oracle will halt block production.
+		// Don't do this, it's just for demo.
+		return true, 0, err, nil
+	}
 
 	underlyingTx := p.msg.Tx
 	if underlyingTx == nil {

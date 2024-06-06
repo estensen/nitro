@@ -207,21 +207,6 @@ func ProduceBlockAdvanced(
 	}
 
 	header := createNewHeader(lastBlockHeader, l1Info, state, chainConfig)
-
-	/*
-		// Fetch the fresh BTC/USD price from Coingecko
-		price, err := getBtcUsdPrice(http.DefaultClient)
-		if err != nil {
-			return nil, nil, err
-		}
-		// Set the price data in the block header
-		if err := state.SetPriceFeed(price); err != nil {
-			// Not being able to update the price oracle will halt block production.
-			// Don't do this, it's just for demo.
-			return nil, nil, err
-		}
-	*/
-
 	signer := types.MakeSigner(chainConfig, header.Number, header.Time)
 	// Note: blockGasLeft will diverge from the actual gas left during execution in the event of invalid txs,
 	// but it's only used as block-local representation limiting the amount of work done in a block.
