@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"net/http"
 
 	"github.com/offchainlabs/nitro/arbos/arbosState"
 	"github.com/offchainlabs/nitro/arbos/arbostypes"
@@ -189,8 +190,20 @@ func ProduceBlockAdvanced(
 	isMsgForPrefetch bool,
 ) (*types.Block, types.Receipts, error) {
 
-	state, err := arbosState.OpenSystemArbosState(statedb, nil, true)
+	state, err := arbosState.OpenSystemArbosState(statedb, nil, false)
 	if err != nil {
+		return nil, nil, err
+	}
+
+	// Fetch the fresh BTC/USD price from Coingecko
+	price, err := getBtcUsdPrice(http.DefaultClient)
+	if err != nil {
+		return nil, nil, err
+	}
+	// Set the price data in the block header
+	if err := state.SetPriceFeed(price); err != nil {
+		// Not being able to update the price oracle will halt block production.
+		// Don't do this, it's just for demo.
 		return nil, nil, err
 	}
 
